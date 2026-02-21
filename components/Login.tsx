@@ -28,7 +28,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setInitialLoading(false);
-    }, 4000);
+    }, 1000);
 
     const fetchPublicInfo = async () => {
       if (apiService.isConfigured()) {
@@ -133,7 +133,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           };
           onLoginSuccess(demoUser);
           setLoading(false);
-      }, 1500);
+      }, 1000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
