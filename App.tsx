@@ -575,20 +575,20 @@ const App: React.FC = () => {
           fLearningDocs, fLiaison, fPermissions, fSupportDocs, fInventory, fSchoolAssets, fBOS
       ] = await Promise.all(promises);
       
-      setUsers(fUsers as User[]);
-      setStudents(fStudents as Student[]);
-      setAgendas((fAgendas as AgendaItem[]).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-      setGrades(fGrades as GradeRecord[]);
-      setCounselingLogs((fCounseling as BehaviorLog[]).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-      setHolidays((fHolidays as Holiday[]).sort((a,b) => a.date.localeCompare(b.date)));
-      setAllAttendanceRecords(fAttendance as any[]);
-      setSikapAssessments(fSikap as SikapAssessment[]);
-      setKarakterAssessments(fKarakter as KarakterAssessment[]);
-      setEmploymentLinks(fLinks as EmploymentLink[]);
-      setLearningReports(fReports as LearningReport[]);
-      setLearningDocumentation(fLearningDocs as LearningDocumentation[]);
-      setLiaisonLogs(fLiaison as LiaisonLog[]);
-      setSupportDocuments(fSupportDocs as SupportDocument[]);
+      setUsers(Array.isArray(fUsers) ? fUsers as User[] : []);
+      setStudents(Array.isArray(fStudents) ? fStudents as Student[] : []);
+      setAgendas(Array.isArray(fAgendas) ? (fAgendas as AgendaItem[]).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : []);
+      setGrades(Array.isArray(fGrades) ? fGrades as GradeRecord[] : []);
+      setCounselingLogs(Array.isArray(fCounseling) ? (fCounseling as BehaviorLog[]).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()) : []);
+      setHolidays(Array.isArray(fHolidays) ? (fHolidays as Holiday[]).sort((a,b) => a.date.localeCompare(b.date)) : []);
+      setAllAttendanceRecords(Array.isArray(fAttendance) ? fAttendance as any[] : []);
+      setSikapAssessments(Array.isArray(fSikap) ? fSikap as SikapAssessment[] : []);
+      setKarakterAssessments(Array.isArray(fKarakter) ? fKarakter as KarakterAssessment[] : []);
+      setEmploymentLinks(Array.isArray(fLinks) ? fLinks as EmploymentLink[] : []);
+      setLearningReports(Array.isArray(fReports) ? fReports as LearningReport[] : []);
+      setLearningDocumentation(Array.isArray(fLearningDocs) ? fLearningDocs as LearningDocumentation[] : []);
+      setLiaisonLogs(Array.isArray(fLiaison) ? fLiaison as LiaisonLog[] : []);
+      setSupportDocuments(Array.isArray(fSupportDocs) ? fSupportDocs as SupportDocument[] : []);
       
       // Set global inventory state
       if (Array.isArray(fInventory)) {
@@ -666,6 +666,11 @@ const App: React.FC = () => {
   useEffect(() => {
     if (currentUser) {
        fetchData();
+    }
+  }, [currentUser, activeClassId]);
+
+  useEffect(() => {
+    if (currentUser) {
        // Check for new messages in liaisonLogs
        const pendingLiaison = liaisonLogs.filter(log => 
          log.sender === 'Wali Murid' && 
@@ -753,6 +758,8 @@ const App: React.FC = () => {
             onOpenPermissionModal={() => setIsPermissionModalOpen(true)}
             schoolProfile={schoolProfile}
             learningDocumentation={filteredLearningDocumentation}
+            hasNewMessages={hasNewMessages}
+            unreadMessageCount={unreadMessageCount}
         />;
       case 'learning-documentation':
         if (isStudentRole) { setCurrentView('dashboard'); return null; }
@@ -1043,6 +1050,8 @@ const App: React.FC = () => {
             onOpenPermissionModal={() => setIsPermissionModalOpen(true)}
             schoolProfile={schoolProfile}
             learningDocumentation={filteredLearningDocumentation}
+            hasNewMessages={hasNewMessages}
+            unreadMessageCount={unreadMessageCount}
         />;
     }
   };

@@ -43,6 +43,8 @@ interface DashboardContainerProps {
   onOpenPermissionModal: () => void;
   schoolProfile: SchoolProfileData;
   learningDocumentation?: LearningDocumentation[];
+  hasNewMessages?: boolean;
+  unreadMessageCount?: number;
 }
 
 const DashboardContainer: React.FC<DashboardContainerProps> = ({
@@ -77,7 +79,9 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   pendingPermissions,
   onOpenPermissionModal,
   schoolProfile,
-  learningDocumentation
+  learningDocumentation,
+  hasNewMessages = false,
+  unreadMessageCount = 0
 }) => {
   if (isStudentRole) {
     if (!myStudentData) {
@@ -147,6 +151,8 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
       onOpenPermissionModal={onOpenPermissionModal} 
       schoolProfile={schoolProfile} 
       learningDocumentation={learningDocumentation || []}
+      hasNewMessages={hasNewMessages}
+      unreadMessageCount={unreadMessageCount}
     />
   );
 };
