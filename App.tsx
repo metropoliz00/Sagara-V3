@@ -276,10 +276,17 @@ const App: React.FC = () => {
     if (currentUser.role === 'siswa') return { isGlobalReadOnly: true, allowedSubjects: [] };
     
     const pos = (currentUser.position || '').toLowerCase();
+    
     if (pos.includes('pai') || pos.includes('agama')) return { isGlobalReadOnly: false, allowedSubjects: ['pai'] };
     if (pos.includes('pjok') || pos.includes('olahraga')) return { isGlobalReadOnly: false, allowedSubjects: ['pjok'] };
     if (pos.includes('inggris')) return { isGlobalReadOnly: false, allowedSubjects: ['inggris'] };
     
+    // Check if Wali Kelas
+    const isWaliKelas = currentUser.classId && currentUser.classId !== 'ALL' && currentUser.classId !== '';
+    if (currentUser.role === 'guru' && !isWaliKelas) {
+        return { isGlobalReadOnly: true, allowedSubjects: [] };
+    }
+
     return { isGlobalReadOnly: false, allowedSubjects: ['all'] };
   }, [currentUser]);
 
@@ -776,6 +783,7 @@ const App: React.FC = () => {
             learningDocumentation={filteredLearningDocumentation}
             hasNewMessages={hasNewMessages}
             unreadMessageCount={unreadMessageCount}
+            bookLoans={bookLoans}
         />;
       case 'learning-documentation':
         if (isStudentRole) { setCurrentView('dashboard'); return null; }
@@ -917,6 +925,7 @@ const App: React.FC = () => {
                     onSaveKarakter={handleSaveKarakter}
                     onShowNotification={handleShowNotification}
                     classId={activeClassId}
+                    isReadOnly={isGlobalReadOnly}
                   />;
       case 'learning-reports': 
         if (isStudentRole) { setCurrentView('dashboard'); return null; }
@@ -1077,6 +1086,7 @@ const App: React.FC = () => {
             learningDocumentation={filteredLearningDocumentation}
             hasNewMessages={hasNewMessages}
             unreadMessageCount={unreadMessageCount}
+            bookLoans={bookLoans}
         />;
     }
   };

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Student, GradeRecord, LiaisonLog, AgendaItem, BehaviorLog, PermissionRequest, KarakterAssessment, KARAKTER_INDICATORS, KarakterIndicatorKey, LearningDocumentation } from '../types';
+import { Student, GradeRecord, LiaisonLog, AgendaItem, BehaviorLog, PermissionRequest, KarakterAssessment, KARAKTER_INDICATORS, KarakterIndicatorKey, LearningDocumentation, BookLoan } from '../types';
 import { MOCK_SUBJECTS } from '../constants';
 import { 
   User, Calendar, Send, FileText, CheckCircle, XCircle, 
@@ -27,13 +27,14 @@ interface StudentPortalProps {
   onSaveKarakter: (studentId: string, assessment: Omit<KarakterAssessment, 'studentId' | 'classId'>) => Promise<void>;
   onUpdateStudent: (student: Student) => Promise<void>;
   learningDocumentation?: LearningDocumentation[];
+  bookLoans: BookLoan[];
 }
 
 type PortalTab = 'dashboard' | 'attendance' | 'liaison' | 'profile' | 'character';
 
 const StudentPortal: React.FC<StudentPortalProps> = ({
   student, allAttendance, grades, liaisonLogs, agendas, behaviorLogs, permissionRequests, karakterAssessments,
-  onSaveLiaison, onSavePermission, onSaveKarakter, onUpdateStudent, learningDocumentation = []
+  onSaveLiaison, onSavePermission, onSaveKarakter, onUpdateStudent, learningDocumentation = [], bookLoans = []
 }) => {
   const [activeTab, setActiveTab] = useState<PortalTab>('dashboard');
   const { showAlert } = useModal();
@@ -791,6 +792,70 @@ const StudentPortal: React.FC<StudentPortalProps> = ({
                         </div>
                       </div>
                     )}
+
+                  {/* 6. Peminjaman Buku Paket */}
+                  <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm animate-fade-in-up">
+                      <h3 className="font-bold text-gray-800 mb-4 flex items-center">
+                          <BookOpen className="mr-2 text-indigo-500" size={20}/> Informasi Peminjaman Buku Paket
+                      </h3>
+                      <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left border-collapse rounded-lg overflow-hidden">
+                              <thead className="bg-indigo-50 text-indigo-800 font-bold text-xs uppercase">
+                                  <tr>
+                                      <th className="p-3 text-center w-12">No</th>
+                                      <th className="p-3">Buku Paket</th>
+                                      <th className="p-3 text-center">Jumlah</th>
+                                      <th className="p-3 text-center">Status</th>
+                                      <th className="p-3">Keterangan</th>
+                                  </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-100">
+                                  {bookLoans.length === 0 ? (
+                                      <tr>
+                                          <td colSpan={5} className="p-8 text-center text-gray-400 italic">
+                                              Tidak ada data peminjaman buku.
+                                          </td>
+                                      </tr>
+                                  ) : (
+                                      bookLoans.map((loan, idx) => (
+                                          <tr key={loan.id} className="hover:bg-indigo-50/30 transition-colors">
+                                              <td className="p-3 text-center text-gray-500 font-mono">{idx + 1}</td>
+                                              <td className="p-3">
+                                                  <div className="flex flex-wrap gap-1">
+                                                      {loan.books.map((book: string, bIdx: number) => (
+                                                          <span 
+                                                              key={bIdx} 
+                                                              className="px-2 py-0.5 bg-white border border-indigo-100 text-indigo-700 rounded-full text-[10px] font-medium shadow-sm"
+                                                          >
+                                                              {book}
+                                                          </span>
+                                                      ))}
+                                                  </div>
+                                                  <div className="text-[10px] text-gray-400 mt-1">
+                                                      Pinjam pada {new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(loan.date))}
+                                                  </div>
+                                              </td>
+                                              <td className="p-3 text-center font-bold text-indigo-600">{loan.qty}</td>
+                                              <td className="p-3 text-center">
+                                                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${
+                                                      loan.status === 'Dipinjam' 
+                                                          ? 'bg-amber-50 text-amber-700 border-amber-200' 
+                                                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                  }`}>
+                                                      {loan.status === 'Dipinjam' ? <Clock size={12} className="mr-1" /> : <CheckCircle size={12} className="mr-1" />}
+                                                      {loan.status}
+                                                  </span>
+                                              </td>
+                                              <td className="p-3 text-gray-600 italic text-xs">
+                                                  {loan.notes || '-'}
+                                              </td>
+                                          </tr>
+                                      ))
+                                  )}
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
               </div>
           )}
 

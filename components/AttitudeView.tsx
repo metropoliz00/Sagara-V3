@@ -12,9 +12,10 @@ interface AttitudeViewProps {
   onSaveKarakter: (studentId: string, assessment: Omit<KarakterAssessment, 'studentId' | 'classId'>) => void;
   onShowNotification: (message: string, type: 'success' | 'error' | 'warning') => void;
   classId: string;
+  isReadOnly?: boolean;
 }
 
-const AttitudeView: React.FC<AttitudeViewProps> = ({ students, initialSikap, initialKarakter, onSaveSikap, onSaveKarakter, onShowNotification, classId }) => {
+const AttitudeView: React.FC<AttitudeViewProps> = ({ students, initialSikap, initialKarakter, onSaveSikap, onSaveKarakter, onShowNotification, classId, isReadOnly = false }) => {
   const [activeTab, setActiveTab] = useState<'sikap' | 'karakter'>('sikap');
   const [sikapData, setSikapData] = useState<SikapAssessment[]>(initialSikap);
   const [karakterData, setKarakterData] = useState<KarakterAssessment[]>(initialKarakter);
@@ -149,9 +150,11 @@ const AttitudeView: React.FC<AttitudeViewProps> = ({ students, initialSikap, ini
               <button onClick={() => setActiveTab('karakter')} className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'karakter' ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-50'}`}><Heart size={16} /><span>7 Kebiasaan</span></button>
             </div>
             <div className="flex gap-1">
-                <button onClick={handleSaveAll} disabled={isSavingAll} className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 shadow-md font-bold disabled:opacity-50">
-                    {isSavingAll ? <Loader2 className="animate-spin"/> : <Save size={18}/>} <span className="hidden sm:inline">{isSavingAll ? 'Proses...' : 'Simpan Semua'}</span>
-                </button>
+                {!isReadOnly && (
+                  <button onClick={handleSaveAll} disabled={isSavingAll} className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 shadow-md font-bold disabled:opacity-50">
+                      {isSavingAll ? <Loader2 className="animate-spin"/> : <Save size={18}/>} <span className="hidden sm:inline">{isSavingAll ? 'Proses...' : 'Simpan Semua'}</span>
+                  </button>
+                )}
                 <button onClick={handlePrint} className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50" title="Cetak"><Printer size={18}/></button>
             </div>
         </div>
@@ -220,8 +223,9 @@ const AttitudeView: React.FC<AttitudeViewProps> = ({ students, initialSikap, ini
                                                     {[1,2,3,4].map(score => (
                                                         <button 
                                                             key={score} 
-                                                            onClick={() => updateSikap(student.id, key, score)} 
-                                                            className={`w-6 h-6 rounded-full text-xs font-bold transition-transform hover:scale-110 ${value === score ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                                                            onClick={() => !isReadOnly && updateSikap(student.id, key, score)} 
+                                                            disabled={isReadOnly}
+                                                            className={`w-6 h-6 rounded-full text-xs font-bold transition-transform ${!isReadOnly ? 'hover:scale-110' : ''} ${value === score ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'} ${isReadOnly ? 'cursor-not-allowed' : ''}`}
                                                         >
                                                             {score}
                                                         </button>
@@ -271,8 +275,11 @@ const AttitudeView: React.FC<AttitudeViewProps> = ({ students, initialSikap, ini
                                     <td key={key} className="p-1 border text-center">
                                         <select 
                                             value={assessment[key] || ''}
-                                            onChange={(e) => updateKarakter(student.id, key, e.target.value)}
-                                            className={`w-full p-2 rounded text-xs font-semibold outline-none cursor-pointer appearance-none text-center transition-colors ${
+                                            onChange={(e) => !isReadOnly && updateKarakter(student.id, key, e.target.value)}
+                                            disabled={isReadOnly}
+                                            className={`w-full p-2 rounded text-xs font-semibold outline-none appearance-none text-center transition-colors ${
+                                                isReadOnly ? 'cursor-not-allowed' : 'cursor-pointer'
+                                            } ${
                                                 assessment[key] === 'Terbiasa' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
                                                 assessment[key] === 'Belum Terbiasa' ? 'bg-gray-100 text-gray-500 border border-gray-200' :
                                                 'bg-white border border-dashed border-gray-300 text-gray-400'
@@ -294,9 +301,10 @@ const AttitudeView: React.FC<AttitudeViewProps> = ({ students, initialSikap, ini
                                     <textarea 
                                         rows={1}
                                         value={assessment.catatan || ''}
-                                        onChange={(e) => updateKarakterNotes(student.id, e.target.value)}
-                                        className="w-full bg-transparent border-none outline-none resize-none text-gray-700 placeholder-gray-400 focus:bg-white focus:ring-1 focus:ring-yellow-300 rounded p-1"
-                                        placeholder="Tulis catatan..."
+                                        onChange={(e) => !isReadOnly && updateKarakterNotes(student.id, e.target.value)}
+                                        disabled={isReadOnly}
+                                        className={`w-full bg-transparent border-none outline-none resize-none text-gray-700 placeholder-gray-400 focus:bg-white focus:ring-1 focus:ring-yellow-300 rounded p-1 ${isReadOnly ? 'cursor-not-allowed' : ''}`}
+                                        placeholder={isReadOnly ? '' : "Tulis catatan..."}
                                     />
                                 </td>
                             </tr>

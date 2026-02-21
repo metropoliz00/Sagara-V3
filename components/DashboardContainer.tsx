@@ -6,7 +6,7 @@ import { AlertCircle } from 'lucide-react';
 import { 
     ViewState, Student, AgendaItem, BehaviorLog, GradeRecord, 
     TeacherProfileData, SchoolProfileData, User, Holiday, KarakterAssessment, 
-    EmploymentLink, LiaisonLog, PermissionRequest, InventoryItem, SchoolAsset, BOSTransaction, Extracurricular, LearningDocumentation
+    EmploymentLink, LiaisonLog, PermissionRequest, InventoryItem, SchoolAsset, BOSTransaction, Extracurricular, LearningDocumentation, BookLoan
 } from '../types';
 import { MOCK_SUBJECTS } from '../constants';
 
@@ -45,6 +45,7 @@ interface DashboardContainerProps {
   learningDocumentation?: LearningDocumentation[];
   hasNewMessages?: boolean;
   unreadMessageCount?: number;
+  bookLoans: BookLoan[];
 }
 
 const DashboardContainer: React.FC<DashboardContainerProps> = ({
@@ -81,7 +82,8 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
   schoolProfile,
   learningDocumentation,
   hasNewMessages = false,
-  unreadMessageCount = 0
+  unreadMessageCount = 0,
+  bookLoans
 }) => {
   if (isStudentRole) {
     if (!myStudentData) {
@@ -111,6 +113,7 @@ const DashboardContainer: React.FC<DashboardContainerProps> = ({
         onSaveKarakter={onSaveKarakter}
         onUpdateStudent={onUpdateStudent}
         learningDocumentation={learningDocumentation || []}
+        bookLoans={bookLoans.filter(loan => loan.studentId === myStudentData?.id)}
       />
     );
   }
