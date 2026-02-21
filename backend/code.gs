@@ -29,7 +29,8 @@ const SHEETS = {
   DOCS: "SupportDocuments",
   LEARNING_DOCUMENTATION: "LearningDocumentation",
   SCHOOL_ASSETS: "SchoolAssets",
-  BOS: "BOSManagement" // NEW BOS
+  BOS: "BOSManagement", // NEW BOS
+  BOOK_LOANS: "BookLoans"
 };
 
 const SUBJECT_SHEETS = {
@@ -84,7 +85,8 @@ function setupDatabase() {
     { name: SHEETS.STRUKTUR, headers: ["Class ID", "Data (JSON)"] },
     { name: SHEETS.SETTINGS, headers: ["Class ID", "Data (JSON)"] },
     { name: SHEETS.SCHOOL_ASSETS, headers: ["ID", "Nama Sarana/Prasarana", "Jumlah", "Kondisi", "Lokasi"] },
-    { name: SHEETS.BOS, headers: ["ID", "Tanggal", "Tipe (income/expense)", "Kategori", "Deskripsi", "Jumlah"] } // NEW BOS
+    { name: SHEETS.BOS, headers: ["ID", "Tanggal", "Tipe (income/expense)", "Kategori", "Deskripsi", "Jumlah"] }, // NEW BOS
+    { name: SHEETS.BOOK_LOANS, headers: ["ID", "Student ID", "Nama Siswa", "Class ID", "Buku (JSON)", "Jumlah", "Status", "Tanggal", "Keterangan"] }
   ];
 
   Object.values(SUBJECT_SHEETS).forEach(sheetName => {
@@ -258,6 +260,10 @@ function handleRequest(e, method) {
     if (action === "saveSchoolAsset") return saveSchoolAsset(params.payload);
     if (action === "deleteSchoolAsset") return deleteSchoolAsset(params.id);
 
+    if (action === "getBookLoans") return getBookLoans(user);
+    if (action === "saveBookLoan") return saveBookLoan(params.payload);
+    if (action === "deleteBookLoan") return deleteBookLoan(params.id);
+
     // BOS API
     if (action === "getBOS") return getBOS();
     if (action === "saveBOS") return saveBOS(params.payload);
@@ -322,6 +328,11 @@ function deleteLearningDocumentation(id, classId) {
 function getBOS(){const rows=getData(SHEETS.BOS);const data=rows.map(r=>({id:String(r[0]),date:formatDate(r[1]),type:String(r[2]),category:String(r[3]),description:String(r[4]),amount:Number(r[5])}));return response({status:"success",data})}
 function saveBOS(item){const sheet=getSheet(SHEETS.BOS);const data=sheet.getDataRange().getValues();const idx=data.findIndex(r=>String(r[0])===String(item.id));const row=[item.id||Utilities.getUuid(),item.date,item.type,item.category,item.description,item.amount];if(idx>0)sheet.getRange(idx+1,1,1,row.length).setValues([row]);else sheet.appendRow(row);return response({status:"success",id:row[0]})}
 function deleteBOS(id){const sheet=getSheet(SHEETS.BOS);const data=sheet.getDataRange().getValues();const idx=data.findIndex(r=>String(r[0])===String(id));if(idx>0){sheet.deleteRow(idx+1);return response({status:"success"})}
+return response({status:"error"})}
+
+function getBookLoans(user){const rows=getData(SHEETS.BOOK_LOANS);const data=rows.map(r=>({id:String(r[0]),studentId:String(r[1]),studentName:String(r[2]),classId:String(r[3]),books:parseJSON(r[4])||[],qty:Number(r[5]),status:String(r[6]),date:formatDate(r[7]),notes:String(r[8])}));return response({status:"success",data})}
+function saveBookLoan(item){const sheet=getSheet(SHEETS.BOOK_LOANS);const data=sheet.getDataRange().getValues();const idx=data.findIndex(r=>String(r[0])===String(item.id));const row=[item.id||Utilities.getUuid(),item.studentId,item.studentName,item.classId,JSON.stringify(item.books),item.qty,item.status,item.date,item.notes];if(idx>0)sheet.getRange(idx+1,1,1,row.length).setValues([row]);else sheet.appendRow(row);return response({status:"success",id:row[0]})}
+function deleteBookLoan(id){const sheet=getSheet(SHEETS.BOOK_LOANS);const data=sheet.getDataRange().getValues();const idx=data.findIndex(r=>String(r[0])===String(id));if(idx>0){sheet.deleteRow(idx+1);return response({status:"success"})}
 return response({status:"error"})}
 
 function getLiaisonLogs(user) {

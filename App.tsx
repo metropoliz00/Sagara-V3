@@ -25,8 +25,9 @@ import SupportDocumentsView from './components/SupportDocumentsView';
 import SupervisorOverview from './components/SupervisorOverview'; 
 import SchoolAssetsAdmin from './components/SchoolAssetsAdmin'; 
 import BOSManagement from './components/BOSManagement'; // NEW IMPORT
+import BookLoanView from './components/BookLoanView';
 import CustomModal from './components/CustomModal'; 
-import { ViewState, Student, AgendaItem, Extracurricular, BehaviorLog, GradeRecord, TeacherProfileData, SchoolProfileData, User, Holiday, SikapAssessment, KarakterAssessment, EmploymentLink, LearningReport, LiaisonLog, PermissionRequest, LearningJournalEntry, SupportDocument, InventoryItem, SchoolAsset, BOSTransaction, LearningDocumentation } from './types';
+import { ViewState, Student, AgendaItem, Extracurricular, BehaviorLog, GradeRecord, TeacherProfileData, SchoolProfileData, User, Holiday, SikapAssessment, KarakterAssessment, EmploymentLink, LearningReport, LiaisonLog, PermissionRequest, LearningJournalEntry, SupportDocument, InventoryItem, SchoolAsset, BOSTransaction, LearningDocumentation, BookLoan } from './types';
 import { MOCK_SUBJECTS, MOCK_STUDENTS, MOCK_EXTRACURRICULARS } from './constants';
 import { apiService } from './services/apiService';
 import { Menu, Loader2, RefreshCw, AlertCircle, CheckCircle, WifiOff, ChevronDown, UserCog, LogOut, Filter, Bell, X, XCircle, MessageSquare } from 'lucide-react';
@@ -73,6 +74,7 @@ const App: React.FC = () => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]); 
   const [schoolAssets, setSchoolAssets] = useState<SchoolAsset[]>([]);
   const [bosTransactions, setBosTransactions] = useState<BOSTransaction[]>([]); // NEW STATE
+  const [bookLoans, setBookLoans] = useState<BookLoan[]>([]);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error' | 'warning'} | null>(null);
   
   // ... (Rest of existing state code)
@@ -508,6 +510,10 @@ const App: React.FC = () => {
   const handleSaveSchoolAsset = async (asset: SchoolAsset) => { if (isDemoMode) { setSchoolAssets(prev => { const exists = prev.find(a => a.id === asset.id); if (exists) return prev.map(a => a.id === asset.id ? asset : a); return [...prev, { ...asset, id: asset.id || `asset-${Date.now()}` }]; }); handleShowNotification('Data aset disimpan (Demo).', 'success'); return; } await apiService.saveSchoolAsset(asset); handleShowNotification('Data sarana prasarana berhasil disimpan.', 'success'); await fetchData(); };
   const handleDeleteSchoolAsset = async (id: string) => { if (isDemoMode) { setSchoolAssets(prev => prev.filter(a => a.id !== id)); handleShowNotification('Data aset dihapus (Demo).', 'success'); return; } await apiService.deleteSchoolAsset(id); handleShowNotification('Data sarana prasarana berhasil dihapus!', 'success'); await fetchData(); };
   
+  // Book Loans
+  const handleSaveBookLoan = async (loan: BookLoan) => { if (isDemoMode) { setBookLoans(prev => { const exists = prev.find(l => l.id === loan.id); if (exists) return prev.map(l => l.id === loan.id ? loan : l); return [loan, ...prev]; }); handleShowNotification('Data peminjaman disimpan (Demo).', 'success'); return; } await apiService.saveBookLoan(loan); handleShowNotification('Data peminjaman berhasil disimpan.', 'success'); await fetchData(); };
+  const handleDeleteBookLoan = async (id: string) => { showConfirm('Hapus data peminjaman ini?', async () => { if (isDemoMode) { setBookLoans(prev => prev.filter(l => l.id !== id)); handleShowNotification('Data peminjaman dihapus (Demo).', 'success'); return; } await apiService.deleteBookLoan(id); handleShowNotification('Data peminjaman berhasil dihapus!', 'success'); await fetchData(); }); };
+
   const fetchData = async () => {
     if (!currentUser) return;
     setLoading(true);
@@ -550,6 +556,7 @@ const App: React.FC = () => {
         apiService.getLiaisonLogs(currentUser), 
         apiService.getPermissionRequests(currentUser),
         apiService.getSupportDocuments(currentUser),
+        apiService.getBookLoans(currentUser),
       ];
 
       // Add inventory fetch if admin/supervisor
@@ -579,7 +586,7 @@ const App: React.FC = () => {
       const [
           fUsers, fStudents, fAgendas, fGrades, fCounseling, fExtracurriculars, 
           fProfiles, fHolidays, fAttendance, fSikap, fKarakter, fLinks, fReports, 
-          fLearningDocs, fLiaison, fPermissions, fSupportDocs, fInventory, fSchoolAssets, fBOS,
+          fLearningDocs, fLiaison, fPermissions, fSupportDocs, fBookLoans, fInventory, fSchoolAssets, fBOS,
           _delay // Placeholder for minDelay
       ] = await Promise.all(promises);
       
@@ -597,6 +604,7 @@ const App: React.FC = () => {
       setLearningDocumentation(Array.isArray(fLearningDocs) ? fLearningDocs as LearningDocumentation[] : []);
       setLiaisonLogs(Array.isArray(fLiaison) ? fLiaison as LiaisonLog[] : []);
       setSupportDocuments(Array.isArray(fSupportDocs) ? fSupportDocs as SupportDocument[] : []);
+      setBookLoans(Array.isArray(fBookLoans) ? fBookLoans as BookLoan[] : []);
       
       // Set global inventory state
       if (Array.isArray(fInventory)) {
@@ -799,6 +807,15 @@ const App: React.FC = () => {
                   assets={schoolAssets}
                   onSave={handleSaveSchoolAsset}
                   onDelete={handleDeleteSchoolAsset}
+               />;
+      case 'book-loan':
+        if (isStudentRole) { setCurrentView('dashboard'); return null; }
+        return <BookLoanView 
+                  students={filteredStudents}
+                  bookLoans={bookLoans}
+                  onSaveLoan={handleSaveBookLoan}
+                  onDeleteLoan={handleDeleteBookLoan}
+                  isDemoMode={isDemoMode}
                />;
       case 'bos-admin': // NEW CASE
         if (!isAdminRole && !isSupervisor) { setCurrentView('dashboard'); return null; }

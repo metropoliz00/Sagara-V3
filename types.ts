@@ -382,4 +382,17 @@ export type ViewState =
   | 'support-docs' 
   | 'supervisor-overview'
   | 'school-assets'
-  | 'bos-admin';
+  | 'bos-admin'
+  | 'book-loan';
+
+export interface BookLoan {
+  id: string;
+  studentId: string;
+  studentName: string;
+  classId: string;
+  books: string[];
+  qty: number;
+  status: 'Dipinjam' | 'Dikembalikan';
+  date: string;
+  notes: string;
+}

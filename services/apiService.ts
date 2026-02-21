@@ -1,9 +1,9 @@
 
 // ... (Previous imports and isApiConfigured remain the same)
-import { Student, AgendaItem, GradeRecord, GradeData, BehaviorLog, Extracurricular, TeacherProfileData, SchoolProfileData, User, Holiday, InventoryItem, Guest, ScheduleItem, PiketGroup, SikapAssessment, KarakterAssessment, SeatingLayouts, AcademicCalendarData, EmploymentLink, LearningReport, LiaisonLog, PermissionRequest, LearningJournalEntry, SupportDocument, OrganizationStructure, SchoolAsset, BOSTransaction, LearningDocumentation } from '../types';
+import { Student, AgendaItem, GradeRecord, GradeData, BehaviorLog, Extracurricular, TeacherProfileData, SchoolProfileData, User, Holiday, InventoryItem, Guest, ScheduleItem, PiketGroup, SikapAssessment, KarakterAssessment, SeatingLayouts, AcademicCalendarData, EmploymentLink, LearningReport, LiaisonLog, PermissionRequest, LearningJournalEntry, SupportDocument, OrganizationStructure, SchoolAsset, BOSTransaction, LearningDocumentation, BookLoan } from '../types';
 
 // PENTING: Menggunakan URL Deployment yang valid dan stabil.
-const API_URL = 'https://script.google.com/macros/s/AKfycbxmfiNKL8FwNOJesIb2ySQk8YpeiAUxvobhu07M49q5WkWQYd_qKL0RmB95zLzkUoNJ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw56g3R3fo1ktBteBdIGIwAgC1YniDGHLGjvs4ycR4NFE9J4pzKqQBtMe1ntp7DmvmC/exec';
 
 const isApiConfigured = () => {
   return API_URL && API_URL.startsWith('http');
@@ -347,6 +347,18 @@ export const apiService = {
   },
   deleteSchoolAsset: async (id: string): Promise<void> => {
     await fetchApi('POST', { action: 'deleteSchoolAsset', id });
+  },
+
+  // --- Book Loans ---
+  getBookLoans: async (currentUser: User | null): Promise<BookLoan[]> => {
+    const res = await fetchApi('POST', { action: 'getBookLoans', user: currentUser });
+    return res.status === 'success' ? res.data : [];
+  },
+  saveBookLoan: async (loan: BookLoan): Promise<void> => {
+    await fetchApi('POST', { action: 'saveBookLoan', payload: loan });
+  },
+  deleteBookLoan: async (id: string): Promise<void> => {
+    await fetchApi('POST', { action: 'deleteBookLoan', id });
   },
 
   // --- BOS Management ---
