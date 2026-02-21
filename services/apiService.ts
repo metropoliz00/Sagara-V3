@@ -3,7 +3,7 @@
 import { Student, AgendaItem, GradeRecord, GradeData, BehaviorLog, Extracurricular, TeacherProfileData, SchoolProfileData, User, Holiday, InventoryItem, Guest, ScheduleItem, PiketGroup, SikapAssessment, KarakterAssessment, SeatingLayouts, AcademicCalendarData, EmploymentLink, LearningReport, LiaisonLog, PermissionRequest, LearningJournalEntry, SupportDocument, OrganizationStructure, SchoolAsset, BOSTransaction, LearningDocumentation, BookLoan } from '../types';
 
 // PENTING: Menggunakan URL Deployment yang valid dan stabil.
-const API_URL = 'https://script.google.com/macros/s/AKfycbw56g3R3fo1ktBteBdIGIwAgC1YniDGHLGjvs4ycR4NFE9J4pzKqQBtMe1ntp7DmvmC/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzwsfw2Yb61lRVHcDRE21PNJ2yvK6NjPq57IENYIGDpkL2sE6RSiA8yPDjC1J1IGtP-/exec';
 
 const isApiConfigured = () => {
   return API_URL && API_URL.startsWith('http');

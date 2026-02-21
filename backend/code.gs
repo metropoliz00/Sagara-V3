@@ -59,7 +59,7 @@ function setupDatabase() {
       headers: ["ID", "Class ID", "NIS", "NISN", "Nama Lengkap", "Gender (L/P)", "Tempat Lahir", "Tanggal Lahir (YYYY-MM-DD)", "Agama", "Alamat", "Nama Ayah", "Pekerjaan Ayah", "Pendidikan Ayah", "Nama Ibu", "Pekerjaan Ibu", "Pendidikan Ibu", "Nama Wali", "No HP Wali", "Pekerjaan Wali", "Status Ekonomi", "Tinggi (cm)", "Berat (kg)", "Gol Darah", "Riwayat Penyakit", "Hobi", "Cita-cita", "Prestasi (JSON)", "Pelanggaran (JSON)", "Skor Perilaku", "Hadir", "Sakit", "Izin", "Alpha", "Foto (Base64)", "Catatan Wali Kelas"]
     },
     { name: SHEETS.AGENDAS, headers: ["ID", "Class ID", "Judul", "Tanggal", "Waktu", "Tipe", "Selesai (TRUE/FALSE)"] },
-    { name: SHEETS.ATTENDANCE, headers: ["Tanggal", "Student ID", "Class ID", "Status", "Catatan"] },
+    { name: SHEETS.ATTENDANCE, headers: ["ID", "Data (JSON)"] },
     { name: SHEETS.HOLIDAYS, headers: ["ID", "Class ID", "Tanggal", "Keterangan", "Tipe"] },
     { name: SHEETS.COUNSELING, headers: ["ID", "Class ID", "Student ID", "Nama Siswa", "Tanggal", "Tipe", "Kategori", "Deskripsi", "Poin", "Emosi", "Status"] },
     { name: SHEETS.EXTRACURRICULARS, headers: ["ID", "Class ID", "Nama Ekskul", "Kategori", "Jadwal", "Pelatih", "Anggota (JSON ID)"] },
@@ -432,9 +432,82 @@ return response({status:"error"})}
 function getGrades(user){const gradeMap={};const students=getData(SHEETS.STUDENTS);students.forEach(s=>{gradeMap[String(s[0])]={studentId:String(s[0]),classId:String(s[1]),subjects:{}}});Object.keys(SUBJECT_SHEETS).forEach(subjKey=>{const sheetName=SUBJECT_SHEETS[subjKey];const rows=getData(sheetName);rows.forEach(r=>{const sId=String(r[0]);if(gradeMap[sId]){gradeMap[sId].subjects[subjKey]={sum1:Number(r[2]),sum2:Number(r[3]),sum3:Number(r[4]),sum4:Number(r[5]),sas:Number(r[6])}}})});return response({status:"success",data:Object.values(gradeMap)})}
 function saveGrade(p){const sheetName=SUBJECT_SHEETS[p.subjectId];if(!sheetName)return response({status:"error",message:"Subject not found"});const sheet=getSheet(sheetName);const data=sheet.getDataRange().getValues();let idx=data.findIndex(r=>String(r[0])===String(p.studentId));const g=p.gradeData;const rowData=[p.studentId,p.classId,g.sum1,g.sum2,g.sum3,g.sum4,g.sas,0];if(idx>0){sheet.getRange(idx+1,1,1,rowData.length).setValues([rowData])}else{sheet.appendRow(rowData)}
 return response({status:"success"})}
-function getAttendance(user){const rows=getData(SHEETS.ATTENDANCE);const data=rows.map(r=>({date:formatDate(r[0]),studentId:String(r[1]),classId:String(r[2]),status:String(r[3]),notes:String(r[4])}));return response({status:"success",data})}
-function saveAttendance(p){const sheet=getSheet(SHEETS.ATTENDANCE);const rows=p.records.map(r=>[p.date,r.studentId,r.classId,r.status,r.notes]);if(rows.length>0)sheet.getRange(sheet.getLastRow()+1,1,rows.length,rows[0].length).setValues(rows);return response({status:"success"})}
-function saveAttendanceBatch(p){const sheet=getSheet(SHEETS.ATTENDANCE);const allRows=[];p.batchData.forEach(d=>{d.records.forEach(r=>{allRows.push([d.date,r.studentId,r.classId,r.status,r.notes])})});if(allRows.length>0)sheet.getRange(sheet.getLastRow()+1,1,allRows.length,allRows[0].length).setValues(allRows);return response({status:"success"})}
+function getAttendance(user){
+  const rows = getData(SHEETS.ATTENDANCE);
+  const data = [];
+  rows.forEach(r => {
+    const id = String(r[0]);
+    const jsonStr = String(r[1]);
+    const records = parseJSON(jsonStr);
+    if (records && Array.isArray(records)) {
+      const parts = id.split('_');
+      const classId = parts[0];
+      const date = parts[1];
+      records.forEach(rec => {
+        data.push({
+          date: date,
+          classId: classId,
+          studentId: rec.studentId,
+          status: rec.status,
+          notes: rec.notes
+        });
+      });
+    } else if (r.length >= 4 && !id.includes('_')) {
+      // Fallback for old format
+      data.push({
+        date: formatDate(r[0]),
+        studentId: String(r[1]),
+        classId: String(r[2]),
+        status: String(r[3]),
+        notes: String(r[4])
+      });
+    }
+  });
+  return response({ status: "success", data: data });
+}
+function saveAttendance(p){
+  const sheet = getSheet(SHEETS.ATTENDANCE);
+  const allData = sheet.getDataRange().getValues();
+  const classGroups = {};
+  p.records.forEach(r => {
+    if (!classGroups[r.classId]) classGroups[r.classId] = [];
+    classGroups[r.classId].push({ studentId: r.studentId, status: r.status, notes: r.notes });
+  });
+  for (const classId in classGroups) {
+    const id = classId + "_" + p.date;
+    const rowIndex = allData.findIndex(r => String(r[0]) === id);
+    const rowData = [id, JSON.stringify(classGroups[classId])];
+    if (rowIndex > 0) {
+      sheet.getRange(rowIndex + 1, 1, 1, rowData.length).setValues([rowData]);
+    } else {
+      sheet.appendRow(rowData);
+    }
+  }
+  return response({ status: "success" });
+}
+function saveAttendanceBatch(p){
+  const sheet = getSheet(SHEETS.ATTENDANCE);
+  const allData = sheet.getDataRange().getValues();
+  p.batchData.forEach(d => {
+    const classGroups = {};
+    d.records.forEach(r => {
+      if (!classGroups[r.classId]) classGroups[r.classId] = [];
+      classGroups[r.classId].push({ studentId: r.studentId, status: r.status, notes: r.notes });
+    });
+    for (const classId in classGroups) {
+      const id = classId + "_" + d.date;
+      const rowIndex = allData.findIndex(r => String(r[0]) === id);
+      const rowData = [id, JSON.stringify(classGroups[classId])];
+      if (rowIndex > 0) {
+        sheet.getRange(rowIndex + 1, 1, 1, rowData.length).setValues([rowData]);
+      } else {
+        sheet.appendRow(rowData);
+        allData.push(rowData);
+      }
+    }
+  });
+  return response({ status: "success" });
+}
 function getHolidays(user){const rows=getData(SHEETS.HOLIDAYS);const data=rows.map(r=>({id:String(r[0]),classId:String(r[1]),date:formatDate(r[2]),description:String(r[3]),type:String(r[4])}));return response({status:"success",data})}
 function saveHolidayBatch(p){const sheet=getSheet(SHEETS.HOLIDAYS);const rows=p.holidays.map(h=>[Utilities.getUuid(),h.classId,h.date,h.description,h.type]);if(rows.length>0)sheet.getRange(sheet.getLastRow()+1,1,rows.length,rows[0].length).setValues(rows);return response({status:"success"})}
 function updateHoliday(h){const sheet=getSheet(SHEETS.HOLIDAYS);const data=sheet.getDataRange().getValues();const idx=data.findIndex(r=>String(r[0])===String(h.id));if(idx>0){sheet.getRange(idx+1,1,1,5).setValues([[h.id,h.classId,h.date,h.description,h.type]]);return response({status:"success"})}
