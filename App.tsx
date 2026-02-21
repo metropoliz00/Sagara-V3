@@ -405,7 +405,7 @@ const App: React.FC = () => {
                   const autoReport: LearningReport = {
                       id: `jurnal-${reportDate}-${activeClassId}`, classId: activeClassId, date: reportDate,
                       type: 'Jurnal Harian', subject: uniqueSubjects, topic: combinedTopics || 'Kegiatan Pembelajaran Harian',
-                      documentLink: '', teacherName: currentUser?.fullName || 'Guru Kelas'
+                      documentLink: '', teacherName: (currentUser?.fullName && currentUser?.fullName !== 'undefined') ? currentUser.fullName : 'Guru Kelas'
                   };
                   await apiService.saveLearningReport(autoReport);
                   const newReports = await apiService.getLearningReports(activeClassId);
@@ -622,7 +622,7 @@ const App: React.FC = () => {
       if (currentUser) {
           setTeacherProfile(prev => ({
               ...prev,
-              name: currentUser.fullName,
+              name: (currentUser.fullName && currentUser.fullName !== 'undefined') ? currentUser.fullName : (prev.name || 'Guru'),
               nip: currentUser.nip || prev.nip,
               nuptk: currentUser.nuptk || prev.nuptk,
               position: currentUser.position,

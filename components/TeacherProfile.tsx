@@ -293,7 +293,7 @@ const TeacherProfile: React.FC<TeacherProfileProps> = ({ initialTeacher, initial
                 <div className="mb-8">
                     <p className="text-md font-bold text-black mb-2 uppercase tracking-widest">DISUSUN OLEH:</p>
                     <div className="inline-block border-2 border-black px-8 py-4 rounded-xl">
-                        <p className="text-2xl font-bold text-black underline decoration-2 underline-offset-4">{profile.name || 'NAMA GURU'}</p>
+                        <p className="text-2xl font-bold text-black underline decoration-2 underline-offset-4">{(profile.name && profile.name !== 'undefined') ? profile.name : 'NAMA GURU'}</p>
                         <p className="text-lg font-bold text-black mt-2">NIP. {profile.nip || '.........................'}</p>
                     </div>
                 </div>

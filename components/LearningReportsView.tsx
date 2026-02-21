@@ -86,7 +86,7 @@ const LearningReportsView: React.FC<LearningReportsViewProps> = ({
         topic: '',
         documentLink: '',
         classId,
-        teacherName: teachers.length > 0 ? teachers[0].fullName : '' // Default to first teacher if available
+        teacherName: (teachers.length > 0 && teachers[0].fullName && teachers[0].fullName !== 'undefined') ? teachers[0].fullName : '' // Default to first teacher if available
       });
     }
     setIsModalOpen(true);
@@ -210,7 +210,7 @@ const LearningReportsView: React.FC<LearningReportsViewProps> = ({
                                 <div className="flex justify-between items-start mb-1">
                                     <div className="flex flex-col">
                                         <span className="font-bold text-gray-800 text-sm">{report.subject}</span>
-                                        <span className="text-xs text-gray-500 font-semibold">{report.teacherName || 'Guru'}</span>
+                                        <span className="text-xs text-gray-500 font-semibold">{(report.teacherName && report.teacherName !== 'undefined') ? report.teacherName : 'Guru'}</span>
                                     </div>
                                     <span className="text-[10px] text-gray-400">{report.date}</span>
                                 </div>
@@ -272,7 +272,9 @@ const LearningReportsView: React.FC<LearningReportsViewProps> = ({
                         {filteredReports.map((report) => (
                             <tr key={report.id} className="hover:bg-indigo-50/30 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap text-gray-500 font-mono text-xs">{report.date}</td>
-                                <td className="px-6 py-4 font-semibold text-gray-700">{report.teacherName || '-'}</td>
+                                <td className="px-6 py-4 font-semibold text-gray-700">
+                        {report.teacherName && report.teacherName !== 'undefined' ? report.teacherName : '-'}
+                      </td>
                                 <td className="px-6 py-4 font-medium text-gray-800">{report.subject}</td>
                                 <td className="px-6 py-4 text-gray-600 max-w-xs truncate">{report.topic}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">

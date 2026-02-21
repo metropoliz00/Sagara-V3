@@ -330,7 +330,7 @@ const TeacherIdentityTab: React.FC<TeacherIdentityTabProps> = ({ profile, setPro
                         <tr>
                             <td className="label">Nama Lengkap</td>
                             <td className="separator">:</td>
-                            <td>{profile.name}</td>
+                            <td>{(profile.name && profile.name !== 'undefined') ? profile.name : '-'}</td>
                         </tr>
                         <tr>
                             <td className="label">NIP</td>
@@ -398,7 +398,7 @@ const TeacherIdentityTab: React.FC<TeacherIdentityTabProps> = ({ profile, setPro
                     </div>
                     
                     {/* Nama dan NIP (Tanpa Garis Bawah) */}
-                    <p className="name">{profile.name}</p>
+                    <p className="name">{(profile.name && profile.name !== 'undefined') ? profile.name : '-'}</p>
                     <p>NIP. {profile.nip}</p>
                 </div>
             </div>
