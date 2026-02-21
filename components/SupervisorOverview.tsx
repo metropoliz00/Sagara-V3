@@ -28,6 +28,8 @@ const SupervisorOverview: React.FC<SupervisorOverviewProps> = ({
   students, users, attendanceRecords, grades, liaisonLogs, permissionRequests, counselingLogs, extracurriculars, inventory, schoolAssets, bosTransactions
 }) => {
   const [activeModal, setActiveModal] = useState<'permissions' | 'discipline' | 'incomplete' | null>(null);
+  const [showAllAssets, setShowAllAssets] = useState(false);
+  const [showAllInventory, setShowAllInventory] = useState(false);
 
   // 0. Gender Breakdown
   const genderCounts = useMemo(() => {
@@ -416,7 +418,7 @@ const SupervisorOverview: React.FC<SupervisorOverviewProps> = ({
                             {schoolAssets.length === 0 ? (
                                 <tr><td colSpan={5} className="p-4 text-center text-gray-400 italic">Belum ada data sarana prasarana.</td></tr>
                             ) : (
-                                schoolAssets.map((item, idx) => (
+                                (showAllAssets ? schoolAssets : schoolAssets.slice(0, 10)).map((item, idx) => (
                                     <tr key={item.id} className="hover:bg-gray-50">
                                         <td className="p-3 text-center text-gray-500">{idx + 1}</td>
                                         <td className="p-3 font-semibold text-gray-700">{item.name}</td>
@@ -439,6 +441,16 @@ const SupervisorOverview: React.FC<SupervisorOverviewProps> = ({
                         </tbody>
                     </table>
                 </div>
+                {schoolAssets.length > 10 && (
+                    <div className="mt-4 text-center">
+                        <button 
+                            onClick={() => setShowAllAssets(!showAllAssets)}
+                            className="text-indigo-600 font-bold text-sm hover:underline"
+                        >
+                            {showAllAssets ? 'Sembunyikan' : `Lihat Semua (${schoolAssets.length})`}
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
@@ -460,7 +472,7 @@ const SupervisorOverview: React.FC<SupervisorOverviewProps> = ({
                             {inventoryList.length === 0 ? (
                                 <tr><td colSpan={5} className="p-4 text-center text-gray-400 italic">Belum ada data inventaris kelas.</td></tr>
                             ) : (
-                                inventoryList.map((item, idx) => (
+                                (showAllInventory ? inventoryList : inventoryList.slice(0, 10)).map((item, idx) => (
                                     <tr key={item.id} className="hover:bg-gray-50">
                                         <td className="p-3 text-center text-gray-500">{idx + 1}</td>
                                         <td className="p-3 font-semibold text-gray-700">
@@ -483,6 +495,16 @@ const SupervisorOverview: React.FC<SupervisorOverviewProps> = ({
                         </tbody>
                     </table>
                 </div>
+                {inventoryList.length > 10 && (
+                    <div className="mt-4 text-center">
+                        <button 
+                            onClick={() => setShowAllInventory(!showAllInventory)}
+                            className="text-indigo-600 font-bold text-sm hover:underline"
+                        >
+                            {showAllInventory ? 'Sembunyikan' : `Lihat Semua (${inventoryList.length})`}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
 
