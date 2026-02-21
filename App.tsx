@@ -514,12 +514,16 @@ const App: React.FC = () => {
     setError(null);
     setIsDemoMode(false);
 
+    // Pastikan loading tampil minimal 1 detik agar transisi halus
+    const minDelay = new Promise(resolve => setTimeout(resolve, 1000));
+
     if (!apiService.isConfigured()) {
       setStudents(MOCK_STUDENTS);
       setExtracurriculars(MOCK_EXTRACURRICULARS);
       setAgendas([]);
       setTeacherProfile({name: 'Budi Santoso (Demo)', nip:'123', email:'demo@guru.com', phone:'-', address:''});
       setIsDemoMode(true);
+      await minDelay;
       setLoading(false);
       handleShowNotification("Mode Demo Aktif: Backend belum dikonfigurasi.", "warning");
       return;
@@ -528,7 +532,7 @@ const App: React.FC = () => {
     try {
       const classIdToFetch = activeClassId;
 
-      const promises = [
+      const promises: Promise<any>[] = [
         currentUser?.role === 'admin' || currentUser?.role === 'supervisor' ? apiService.getUsers(currentUser) : Promise.resolve([]),
         apiService.getStudents(currentUser),
         apiService.getAgendas(currentUser),
@@ -569,10 +573,14 @@ const App: React.FC = () => {
           promises.push(Promise.resolve([]));
       }
 
+      // Add minDelay to ensure at least 1s loading
+      promises.push(minDelay);
+
       const [
           fUsers, fStudents, fAgendas, fGrades, fCounseling, fExtracurriculars, 
           fProfiles, fHolidays, fAttendance, fSikap, fKarakter, fLinks, fReports, 
-          fLearningDocs, fLiaison, fPermissions, fSupportDocs, fInventory, fSchoolAssets, fBOS
+          fLearningDocs, fLiaison, fPermissions, fSupportDocs, fInventory, fSchoolAssets, fBOS,
+          _delay // Placeholder for minDelay
       ] = await Promise.all(promises);
       
       setUsers(Array.isArray(fUsers) ? fUsers as User[] : []);
