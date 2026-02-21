@@ -367,8 +367,35 @@ const StudentList: React.FC<StudentListProps> = ({
                   // 6. Student Name
                   ctx.fillStyle = '#000000';
                   ctx.font = 'bold 50px Arial, sans-serif';
-                  // Simple text wrap handling for long names could go here, but taking simple approach
-                  ctx.fillText(student.name, centerX, height - 280);
+                  
+                  const maxWidth = width - 120;
+                  const words = student.name.split(' ');
+                  let line = '';
+                  const lines = [];
+                  
+                  for (let n = 0; n < words.length; n++) {
+                      const testLine = line + words[n] + ' ';
+                      const metrics = ctx.measureText(testLine);
+                      const testWidth = metrics.width;
+                      if (testWidth > maxWidth && n > 0) {
+                          lines.push(line.trim());
+                          line = words[n] + ' ';
+                      } else {
+                          line = testLine;
+                      }
+                  }
+                  lines.push(line.trim());
+
+                  // Draw lines
+                  const lineHeight = 60;
+                  // Base Y position for the name section
+                  const nameBaseY = height - 280;
+                  // Adjust startY based on number of lines to keep it centered around nameBaseY
+                  const startY = nameBaseY - ((lines.length - 1) * lineHeight / 2);
+
+                  lines.forEach((l, i) => {
+                      ctx.fillText(l, centerX, startY + (i * lineHeight));
+                  });
 
                   // 7. NIS & NISN Box
                   const boxY = height - 220;
